@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import AddLinkIcon from "@mui/icons-material/AddLink";
-import { Snackbar, Alert, IconButton  } from "@mui/material";
+import { Snackbar, Alert, Dialog  } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import { FormControl, Input, Button, InputAdornment } from "@mui/material";
-import EventIcon from '@mui/icons-material/Event';
+// import EventIcon from '@mui/icons-material/Event';
 import TextareaAutosize from "@mui/base/TextareaAutosize";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import { ThemeContext } from "../App";
@@ -25,10 +25,12 @@ const Tasks = () => {
   // const [data, setData] = useState([]);
   // const [user, setUser] = useState({});
   const [date, setDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [error, setError] = useState("");
   const [description, setDescription] = useState("");
   const [taskStatusId, setTaskStatusId] = useState();
   const [modelOpen, setModelOpen] = useState(false);
+  const [modelOpen2, setModelOpen2] = useState(false);
   const [errors, setErrors] = useState()
   const [errorMode, setErrorMode] = useState(false)
   const [alert, setAlert] = useState(false);
@@ -36,8 +38,9 @@ const Tasks = () => {
   // const [windowWidth, setWindowWidth] = useState(0);
   // const [scroll, setScroll] = useState(false)
   const [colorx, setColorx] = useState("")
-
-
+  const [loading, setLoading] = useState(false)
+  const [name, setName] = useState("")
+  const [name2, setName2] = useState("")
 
   let resizeWindow = () => {
     setWindowHeight(Number(window.innerHeight));
@@ -179,11 +182,50 @@ const Tasks = () => {
   }
 
   
-  const addTask = (id) => {
+  // const addTask = (id) => {
+  //   // const formattedDate = moment(new Date().toLocaleDateString(), 'MM/DD/YYYY').format('YYYY-MM-DD');
+  //   setLoading(true)
+  //   axios.post("https://nartina.com/api/user/addTask/" + id, {
+  //           // date: formattedDate,
+  //           date: new Date().toISOString().substring(0, 10),
+  //           description,
+  //           color: colorx == "" ? 'green' : colorx
+  //         }, {
+  //           headers: {
+  //             Authorization: 'Bearer ' + result?.token,
+          
+  //            }
+  //         }).then(res => {console.log(res.data)
+  //           localStorage.setItem('tasksStats', true)
+  //           refetch()
+  //         // getData()
+  //       })
+  //         .catch(error => {setError(error.response.data)
+  //           setErrors(error.response.status)})
+  //           .finally(setLoading(false))
+  //         setDate("")
+  //         setDescription("")
+  //         setModelOpen(false)
+          
+       
+  // }
+
+  const closeModel = () => {
+    setColorx("")
+    setDate("")
+    setDescription("")
+    setTaskStatusId("")
+    setModelOpen2(false)
+  }
+
+  const addTask = (e) => {
+    e.preventDefault();
     // const formattedDate = moment(new Date().toLocaleDateString(), 'MM/DD/YYYY').format('YYYY-MM-DD');
-    axios.post("https://nartina.com/api/user/addTask/" + id, {
+    setLoading(true)
+    axios.post("https://nartina.com/api/user/addTask/" + taskStatusId, {
             // date: formattedDate,
-            date: new Date().toISOString().substring(0, 10),
+            // date: new Date().toISOString().substring(0, 10),
+            endDate,
             description,
             color: colorx == "" ? 'green' : colorx
           }, {
@@ -193,28 +235,37 @@ const Tasks = () => {
              }
           }).then(res => {console.log(res.data)
             localStorage.setItem('tasksStats', true)
+            closeModel()
             refetch()
           // getData()
         })
           .catch(error => {setError(error.response.data)
             setErrors(error.response.status)})
-          setDate("")
-          setDescription("")
-          setModelOpen(false)
+            .finally(setLoading(false))
+            closeModel()
           
        
   }
 
-  const openModel = (id) => {
-    console.log("section id: " + id);
+  // const openModel = (id) => {
+  //   console.log("section id: " + id);
+  //   setTaskStatusId(id);
+  //   // setModelOpen(true);
+  //   setColorx("")
+  //   setModelOpen(!modelOpen);
+  // };
+
+  const openModel2 = (id, name, name2) => {
+    console.log("section id: " + id, "section name: " + name);
     setTaskStatusId(id);
+    setName(name)
+    setName2(name2)
     // setModelOpen(true);
     setColorx("")
-    setModelOpen(!modelOpen);
+    setModelOpen2(true);
   };
 
-  // const closeModel = () => {
-  // }
+ 
 
   const onDragEnd = (result) => {
     console.log(result);
@@ -300,7 +351,7 @@ const Tasks = () => {
                       </div>
 
                       ) : (
-        <div className="flex items-center justify-center cursor-pointer w-8 h-8 rounded-full hover:scale-110 ease-out transition-all duration-125 hover:bg-sky-200 bg-blue-100" onClick={() => openModel(section.id)}>
+        <div className="flex items-center justify-center cursor-pointer w-8 h-8 rounded-full hover:scale-110 ease-out transition-all duration-125 hover:bg-sky-200 bg-blue-100" onClick={() => openModel2(section.id, changeName(section.name), section.name)}>
         <svg
             className="w-6 h-6 text-yellow-500"
             fill="none"
@@ -365,6 +416,7 @@ const Tasks = () => {
                             name={section.name}
                             title={task.description}
                             date={task.date}
+                            end={task.endDate}
                             icon={changeIcon(section.name)}
                             color={changeColor(section.name)}
                             color2={changeColor2(section.name)}
@@ -426,7 +478,7 @@ const Tasks = () => {
                       </div>
 
                       ) : (
-        <div className="flex items-center justify-center group cursor-pointer w-8 h-8 rounded-full hover:scale-110 ease-out transition-all duration-125 hover:bg-gray-600 bg-blue-100 dark:bg-gray-700 p-1" onClick={() => openModel(section.id)}>
+        <div className="flex items-center justify-center group cursor-pointer w-8 h-8 rounded-full hover:scale-110 ease-out transition-all duration-125 hover:bg-gray-600 bg-blue-100 dark:bg-gray-700 p-1" onClick={() => openModel2(section.id, changeName(section.name), section.name)}>
         <svg
             className="w-6 h-6 text-yellow-500 group-hover:scale-110"
             fill="none"
@@ -528,6 +580,7 @@ const Tasks = () => {
                           <Task
                             title={task.description}
                             date={task.date}
+                            end={task.endDate}
                             icon={changeIcon(section.name)}
                             color={changeColor(section.name)}
                             color2={changeColor2(section.name)}
@@ -602,7 +655,7 @@ const Tasks = () => {
                     </div>
 
                     ) : (
-      <div className="flex items-center justify-center cursor-pointer w-8 h-8 rounded-full hover:scale-110 ease-out transition-all duration-125 hover:bg-sky-200 bg-blue-100" onClick={() => openModel(section.id)}>
+      <div className="flex items-center justify-center cursor-pointer w-8 h-8 rounded-full hover:scale-110 ease-out transition-all duration-125 hover:bg-sky-200 bg-blue-100" onClick={() => openModel2(section.id, changeName(section.name), section.name)}>
       <svg
           className="w-6 h-6 text-yellow-500"
           fill="none"
@@ -667,6 +720,7 @@ const Tasks = () => {
                           name={section.name}
                           title={task.description}
                           date={task.date}
+                          end={task.endDate}
                           icon={changeIcon(section.name)}
                           color={changeColor(section.name)}
                           color2={changeColor2(section.name)}
@@ -728,7 +782,7 @@ const Tasks = () => {
                     </div>
 
                     ) : (
-      <div className="flex items-center justify-center group cursor-pointer w-8 h-8 rounded-full hover:scale-110 ease-out transition-all duration-125 hover:bg-gray-600 bg-blue-100" onClick={() => openModel(section.id)}>
+      <div className="flex items-center justify-center group cursor-pointer w-8 h-8 rounded-full hover:scale-110 ease-out transition-all duration-125 hover:bg-gray-600 bg-blue-100" onClick={() => openModel2(section.id, changeName(section.name), section.name)}>
       <svg
           className="w-6 h-6 text-yellow-500 group-hover:scale-110"
           fill="none"
@@ -830,6 +884,7 @@ const Tasks = () => {
                         <Task
                           title={task.description}
                           date={task.date}
+                          end={task.endDate}
                           icon={changeIcon(section.name)}
                           color={changeColor(section.name)}
                           color2={changeColor2(section.name)}
@@ -882,6 +937,170 @@ const Tasks = () => {
           </>}
  </Alert>
       </Snackbar>
+
+      <Dialog open={modelOpen2}>
+
+  <div class={`flex items-center justify-center overflow-y-auto overflow-x-hidden fixed z-50 sm:w-full inset-0 h-full ${globalTheme != "light" && 'dark'}`}>
+    <div class="relative p-4 w-full max-w-2xl h-auto mt-72 sm:mt-0">
+
+        <div class="relative p-4 bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
+           
+           
+            <div class="flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600">
+            <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white" onClick={closeModel}>
+                    <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+                <div className="flex flex-col items-end">
+                <div className='flex items-center justify-end space-x-4'>
+                        {/* <InformationCircleIcon 
+                          strokeWidth={2} 
+                          className="text-[#333] dark:text-[#ccc] w-5 h-5 cursor-pointer relative " 
+                        /> */}
+                
+                <h3 class="text-lg tracking-wide font-semibold text-gray-900 dark:text-white">
+                    הכנס משימה חדשה
+                </h3>
+                
+                </div>
+                <h3 class="text-lg font-mono tracking-wide text-gray-600 dark:text-white">
+                  {name}
+                </h3>
+                <div class="w-full h-2 mb-4 bg-blue-100 rounded-full relative top-1 flex justify-end">
+                    <div class={`${changeSize(name2)} h-full text-xs text-center text-white ${changeColor2(name2)} rounded-full`}>
+                   </div>
+                 </div>
+                </div>
+            </div>
+            
+         {/* {errorRes[0] != null && <div className='flex items-center justify-center text-center'>
+          <Alert severity="error">{errorRes}
+            <CloseIcon className='text-red-600 cursor-pointer hover:text-red-500' onClick={()=> setErrorRes("")}/>
+          </Alert>
+        </div>} */}
+        {/* {errors == 403 && <div className='flex items-center justify-center text-center'>
+          <Alert severity="error">יש לעשות יציאה ולהרשם שוב מטעמי בטיחות  
+          
+            <CloseIcon className='text-red-600 cursor-pointer hover:text-red-500' onClick={()=> setErrorRes("")}/>
+
+</Alert>
+        </div>} */}
+        
+            <form onSubmit={addTask}>
+                <div class="grid gap-4 mb-4 sm:grid-cols-2">
+                    
+                  {/* <div className='flex items-center justify-center space-x-2'>
+                  <div>
+                      <label for="agentPhone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-right">שכר שעתי</label>
+                      <input type="text" name="agentPhone" value={salaryPerHour} placeholder="שכר שעתי" class="bg-gray-50 placeholder:text-right border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required="" onChange={(e)=> setSalaryPerHour(e.target.value)}/>
+                  </div>
+                  <div>
+                  <div className='flex justify-end items-center space-x-0.5'>
+                        <h1 className='text-[10px] text-red-500 relative bottom-0.5'>שדה חובה</h1>
+                        <label for="agentPhone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-right">מין העובד</label>
+                      </div>
+                      <select name='type' onChange={(e) => setGender(e.target.value)} className="bg-gray-50 text-right h-[42px] relative border border-gray-300 text-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-[#ccc] dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                              <option selected="">מין העובד</option>
+                              {genders.map(g => (
+                              <option className='text-right' value={g}>{g}</option>
+                              ))}
+                          </select>
+
+                  </div>
+                  </div> */}
+                  {/* <div className='flex items-center justify-center space-x-2'>
+                  <div>
+                      <label for="agentPhone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-right">תאריך לידה</label>
+                      <input type="date" name="agentPhone" value={dob} placeholder="תאריך לידה" class="bg-gray-50 h-[40px] min-w-max placeholder:text-right border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required="" onChange={(e)=> setDob(e.target.value)}/>
+                  </div>
+                  <div>
+                      <label for="agentPhone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-right">התחלת עבודה</label>
+                      <input type="date" name="agentPhone" value={startedAt} placeholder="התחלת עבודה" class="bg-gray-50 h-[40px] min-w-max placeholder:text-right border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required="" onChange={(e)=> setStartedAt(e.target.value)}/>
+                  </div>
+
+                  </div> */}
+                  <div className="col-span-2">
+                      <label for="agentPhone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-right">תאריך סיום משימה</label>
+                      <input type="date" name="agentPhone" value={endDate} placeholder="התחלת עבודה" class="bg-gray-50 h-[40px] w-full placeholder:text-right border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required="" onChange={(e)=> setEndDate(e.target.value)}/>
+                  </div>
+                    <div class="sm:col-span-2">
+                        <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-right">פרטי משימה</label>
+                        <textarea value={description} rows="4" class="block text-right p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border placeholder:text-right border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="הכנס את פרטי ותיאור המשימה, ניתן גם להוסיף את חשיבות המשימה לקבוע מועד לסיום המשימה, וגם ניתן לצוות עובדים למשימה" onChange={(e)=> setDescription(e.target.value)}></textarea>                    
+                    </div>
+                </div>
+                <div className='flex w-full items-center justify-between space-x-4'>
+                <div className='flex items-center justify-center space-x-2'>
+                {!loading ? (
+              <button type="submit" class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                  הכנס משימה   
+              </button>
+                ) : (
+                  <button disabled type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 inline-flex items-center">
+    <svg aria-hidden="true" role="status" class="inline w-4 h-4 mr-3 text-white animate-spin" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="#E5E7EB"/>
+    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentColor"/>
+    </svg>
+    Loading...
+</button>
+                )}
+                <div class="inline-flex items-center cursor-pointer text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-900" onClick={closeModel}>
+                        <svg aria-hidden="true" class="w-5 h-5 mr-1.5 -ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                        בטל
+                </div>
+                </div>
+           
+                   <div className="flex items-center justify-end space-x-5">
+                   <ul class="flex flex-row items-center justify-center">
+                      
+                      <li class="mr-2.5 last:mr-0 cursor-pointer" onClick={()=> setColorx("red")}>
+                      <span class={`block p-1 transition duration-300 ease-in border-2 ${colorx == "red" && 'border-gray-500'} hover:border-gray-500 rounded-full`}>
+                              <div class="block w-6 h-6 bg-red-500 rounded-full">
+                              {colorx == "red" && <CheckIcon fontSize="small" className='text-white'/>}
+                              </div>
+                          </span>
+                      </li>
+                      <li class="mr-2.5 last:mr-0 cursor-pointer" onClick={()=> setColorx("yellow")}>
+                      <span class={`block p-1 transition duration-300 ease-in border-2 ${colorx == "yellow" && 'border-gray-500'} hover:border-gray-500 rounded-full`}>
+                              <div class="block w-6 h-6 bg-yellow-500 rounded-full">
+                              {colorx == "yellow" && <CheckIcon fontSize="small" className='text-white'/>}
+                              </div>
+                          </span>
+                      </li>
+                      <li class="mr-2.5 last:mr-0 cursor-pointer" onClick={()=> setColorx("blue")}>
+                          <span class={`block p-1 transition duration-300 ease-in border-2 ${colorx == "blue" && 'border-gray-500'} hover:border-gray-500 rounded-full`}>
+                              <div class="block w-6 h-6 bg-blue-900 rounded-full">
+                              {colorx == "blue" && <CheckIcon fontSize="small" className='text-white'/>}
+                              </div>
+                          </span>
+                      </li>
+                      <li class="mr-2.5 last:mr-0 cursor-pointer" onClick={()=> setColorx("green")}>
+                      <span class={`block p-1 transition duration-300 ease-in border-2 ${colorx == "green" && 'border-gray-500'} hover:border-gray-500 rounded-full`}>
+                              <div class="block w-6 h-6 bg-green-500 rounded-full">
+                              {colorx == "green" && <CheckIcon fontSize="small" className='text-white'/>}
+                              </div>
+                          </span>
+                      </li>
+                  </ul>
+                   {true ? (
+                      <div class="flex -space-x-4">
+                         <img class="w-10 h-10 border-2 border-white rounded-full dark:border-gray-800" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png" alt="" />
+                         <img class="w-10 h-10 border-2 border-white rounded-full dark:border-gray-800" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/helene-engels.png" alt="" />
+                         <img class="w-10 h-10 border-2 border-white rounded-full dark:border-gray-800" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/jese-leos.png" alt="" />
+                         <img class="w-10 h-10 border-2 border-white rounded-full dark:border-gray-800" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/joseph-mcfall.png" alt="" />
+                     </div>
+                    ) : (
+                    <div class="relative w-10 h-10 cursor-pointer overflow-hidden bg-gray-200 rounded-full dark:bg-gray-600" onClick={()=> alert("true")}>
+                      <svg class="absolute w-12 h-12 text-gray-400 -left-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    )}
+                   </div>
+                
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+  </Dialog>
     </>
   );
 };
